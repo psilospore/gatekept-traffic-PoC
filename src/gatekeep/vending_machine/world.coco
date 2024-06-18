@@ -1,0 +1,61 @@
+from typing import NamedTuple
+import numpy as np
+import gymnasium as gym
+
+# Partially AI generated
+
+data VendingMachineState(coins_inserted, product_stock)
+
+def create_vending_machine(max_steps: int):
+    observation_space = gym.spaces.Dict(
+        { # Wont' deal with cents or other change. Just a single unit, a coin.
+            "coins_inserted": gym.spaces.Discrete(5),  # 0, 1, 2, 3, 4 coins
+            # Products have a cost of 1 coin
+            "product_stock": gym.spaces.MultiBinary(3),  # 3 products
+        }
+    )
+    action_space = gym.spaces.Discrete(4)  # 0: Insert Coin, 1-3: Select Product
+    initial_state = VendingMachineState(0, np.zeros(3))
+    steps = 0
+    max_steps = max_steps
+    reset_vending_machine()
+
+def reset_vending_machine():
+    state = VendingMachineState(
+        0,
+        np.random.randint(2, size=3)
+    )
+    steps = 0
+    state
+
+def step_vending_machine(state, action, steps, max_steps):
+    if action == 0:
+        new_state = VendingMachineState(
+            min(state.coins_inserted + 1, 4),
+            state.product_stock
+        )
+    elif action >= 0 and action <= 4:
+        select_product(state, action)
+
+
+    new_steps = steps + 1
+    done = new_steps >= max_steps
+    (new_state, 0, done, {}, new_steps)
+
+def select_product(state, product_index):
+    match product_index < len(state.product_stock) and product_index >= 0 and state.product_stock[product_index] > 0:
+        case True:
+            match state.coins_inserted >= state.product_prices[product_index]:
+                case True:
+                    VendingMachineState(
+                        state.coins_inserted - state.product_prices[product_index],
+                        state.product_stock |> (lambda stock: stock.__setitem__(product_index, stock[product_index] - 1)),
+                        state.product_prices
+                    )
+                case False:
+                    state
+        case False:
+            state
+
+def copy_vending_machine_state(state):
+    state |*> (VendingMachineState)
