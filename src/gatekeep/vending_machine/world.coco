@@ -37,7 +37,6 @@ def step_vending_machine(state, action, steps, max_steps):
     elif action >= 0 and action <= 4:
         select_product(state, action)
 
-
     new_steps = steps + 1
     done = new_steps >= max_steps
     (new_state, 0, done, {}, new_steps)
@@ -45,12 +44,11 @@ def step_vending_machine(state, action, steps, max_steps):
 def select_product(state, product_index):
     match product_index < len(state.product_stock) and product_index >= 0 and state.product_stock[product_index] > 0:
         case True:
-            match state.coins_inserted >= state.product_prices[product_index]:
+            match state.coins_inserted >= 1:
                 case True:
                     VendingMachineState(
-                        state.coins_inserted - state.product_prices[product_index],
+                        state.coins_inserted - 1,
                         state.product_stock |> (lambda stock: stock.__setitem__(product_index, stock[product_index] - 1)),
-                        state.product_prices
                     )
                 case False:
                     state
