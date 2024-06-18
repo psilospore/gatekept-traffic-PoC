@@ -3,6 +3,10 @@ import numpy as np
 import gymnasium as gym
 
 # Partially AI generated
+# A vending machine world where it may take in 1 coin in a time
+# Which will accumulate to n coins
+# An item cost 1 coin
+# C
 
 data VendingMachineState(coins_inserted, product_stock)
 
@@ -42,18 +46,22 @@ def step_vending_machine(state, action, steps, max_steps):
     (new_state, 0, done, {}, new_steps)
 
 def select_product(state, product_index):
-    match product_index < len(state.product_stock) and product_index >= 0 and state.product_stock[product_index] > 0:
+    match product_index < len(state.product_stock):
         case True:
-            match state.coins_inserted >= 1:
+            match state.coins_inserted >= 1 and state.product_stock[product_index] >= 1:
                 case True:
                     VendingMachineState(
                         state.coins_inserted - 1,
-                        state.product_stock |> (lambda stock: stock.__setitem__(product_index, stock[product_index] - 1)),
+                        state.product_stock |> fmap$((product, stock) => if product == product_index:
+                            stock - 1
+                            else:
+                            stock)
                     )
                 case False:
                     state
         case False:
             state
 
+# non-sense?
 def copy_vending_machine_state(state):
-    state |*> (VendingMachineState)
+    # state |*> (VendingMachineState)
